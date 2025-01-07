@@ -207,7 +207,7 @@ dispatcher.add_handler(CallbackQueryHandler(button))
 # Define a custom filter as a function
 def custom_filter(update, context):
     #return context.user_data.get('add_member', False)
-    return context.chat_data.get('add_member', False) or add_member_request
+    return context.chat_data.get('add_member', False) or add_member_request or True
 # Register the handler
 dispatcher.add_handler(MessageHandler(Filters.all, add_member, custom_filter))
 
