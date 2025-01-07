@@ -72,7 +72,7 @@ def generate_map(chat_id):
     aprs_data = get_aprs_data()
 
     if not aprs_data:
-        bot.send_message(chat_id=chat_id, text="Nessun membro attivo trovato.")
+        bot.send_message(chat_id=chat_id, text="APRS vuoto")
         return
 
     # Calcola il centro della mappa
