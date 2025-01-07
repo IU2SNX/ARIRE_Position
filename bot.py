@@ -47,6 +47,7 @@ def add_member(update: Update, context: CallbackContext):
         update.message.reply_text(f"{update.message.text} aggiunto!")
         context.user_data['add_member'] = False
 
+from PIL import Image
 import imgkit
 
 def generate_map(chat_id):
@@ -66,9 +67,18 @@ def generate_map(chat_id):
     png_file = "map.png"
     imgkit.from_file(map_file, png_file)
 
-    # Inviare il PNG tramite Telegram
-    with open(png_file, 'rb') as f:
+    # Ridimensionare l'immagine per soddisfare i requisiti di Telegram
+    resized_file = "map_resized.png"
+    with Image.open(png_file) as img:
+        img = img.convert("RGB")  # Assicurarsi che sia in formato RGB
+        max_size = (1024, 1024)  # Risoluzione massima supportata da Telegram
+        img.thumbnail(max_size, Image.ANTIALIAS)  # Ridimensiona mantenendo il rapporto
+        img.save(resized_file, format="PNG")
+
+    # Inviare l'immagine ridimensionata tramite Telegram
+    with open(resized_file, 'rb') as f:
         bot.send_photo(chat_id=chat_id, photo=f)
+
 
 
 def get_aprs_data():
