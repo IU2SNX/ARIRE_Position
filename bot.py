@@ -1,12 +1,24 @@
 import os
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
+from flask import Flask, request
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Dispatcher, CommandHandler, CallbackQueryHandler, CallbackContext
 import requests
 import folium
 
-# Caricare le variabili di ambiente
+# Variabili di ambiente
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 APRS_API_KEY = os.getenv('APRS_API_KEY')
+
+# Verifica del token
+if not TELEGRAM_BOT_TOKEN:
+    raise ValueError("Il token del bot non è definito. Controlla le variabili di ambiente.")
+
+# Flask app
+app = Flask(__name__)
+
+# Configura il bot e il dispatcher
+bot = Bot(token=TELEGRAM_BOT_TOKEN)
+dispatcher = Dispatcher(bot, None, use_context=True)
 
 # Database temporaneo
 members = []
@@ -56,21 +68,25 @@ def get_aprs_data():
     return [{'name': entry['name'], 'lat': float(entry['lat']), 'lon': float(entry['lng'])}
             for entry in response.get('entries', [])]
 
-# Setup del bot
-def main():
-    if not TELEGRAM_BOT_TOKEN:
-        raise ValueError("Il token del bot non è definito. Controlla le variabili di ambiente.")
+# Aggiungi gestori al dispatcher
+dispatcher.add_handler(CommandHandler("start", start))
+dispatcher.add_handler(CallbackQueryHandler(button))
+dispatcher.add_handler(CommandHandler("add_member", add_member))
 
-    from telegram.ext import Updater
-    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
-    dp = updater.dispatcher
+# Route per il webhook
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    update = Update.de_json(request.get_json(force=True), bot)
+    dispatcher.process_update(update)
+    return 'OK'
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CallbackQueryHandler(button))
-    dp.add_handler(CommandHandler("add_member", add_member))
+# Imposta il webhook al lancio
+@app.before_first_request
+def set_webhook():
+    webhook_url = f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/webhook"
+    bot.set_webhook(webhook_url)
 
-    updater.start_polling()
-    updater.idle()
-
+# Avvio del server Flask
 if __name__ == '__main__':
-    main()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
