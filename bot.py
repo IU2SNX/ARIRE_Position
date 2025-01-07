@@ -47,60 +47,92 @@ def add_member(update: Update, context: CallbackContext):
         update.message.reply_text(f"{update.message.text} aggiunto!")
         context.user_data['add_member'] = False
 
+from geopy.distance import geodesic
+from math import radians, degrees
+import folium
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from PIL import Image
 import time
-import os
 
 def generate_map(chat_id):
-    # Esempio di dati APRS
+    # Esempio di dati APRS (da sostituire con la chiamata API reale)
     aprs_data = get_aprs_data()
 
-    # Creare la mappa
-    m = folium.Map(location=[45.4642, 9.19], zoom_start=13)
+    if not aprs_data:
+        bot.send_message(chat_id=chat_id, text="Nessun membro attivo trovato.")
+        return
+
+    # Calcola il centro della mappa
+    latitudes = [entry['lat'] for entry in aprs_data]
+    longitudes = [entry['lon'] for entry in aprs_data]
+    center_lat = sum(latitudes) / len(latitudes)
+    center_lon = sum(longitudes) / len(longitudes)
+
+    # Calcola la distanza massima dal centro
+    center = (center_lat, center_lon)
+    max_distance = max(geodesic(center, (entry['lat'], entry['lon'])).meters for entry in aprs_data)
+
+    # Aggiungi un buffer di 100 metri
+    max_distance += 100
+
+    # Stima del livello di zoom
+    def calculate_zoom(distance):
+        if distance < 1000:  # Meno di 1 km
+            return 15
+        elif distance < 5000:  # 1-5 km
+            return 13
+        elif distance < 10000:  # 5-10 km
+            return 12
+        elif distance < 20000:  # 10-20 km
+            return 11
+        else:
+            return 10
+
+    zoom_level = calculate_zoom(max_distance)
+
+    # Creare la mappa centrata
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=zoom_level)
+
+    # Aggiungere i marker
     for member in aprs_data:
-        folium.Marker([member['lat'], member['lon']], popup=member['name']).add_to(m)
+        folium.Marker(
+            location=[member['lat'], member['lon']],
+            popup=member['name']
+        ).add_to(m)
 
     # Salvare la mappa come HTML
     map_file = "map.html"
     m.save(map_file)
 
-    # Configurare Selenium per il rendering della mappa
+    # Utilizzare Selenium per generare l'immagine
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_service = Service("/usr/bin/chromedriver")
 
-    # Avvia il browser headless
     driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
-    driver.set_window_size(1024, 1024)  # Dimensioni della finestra
+    driver.set_window_size(1024, 1024)
 
-    # Carica la mappa HTML
     driver.get(f"file://{os.path.abspath(map_file)}")
+    time.sleep(5)  # Attendere il caricamento della mappa
 
-    # Aspetta che la mappa sia completamente caricata
-    time.sleep(5)  # Ritardo per garantire il rendering completo
-
-    # Cattura uno screenshot della mappa
     screenshot_file = "map_screenshot.png"
     driver.save_screenshot(screenshot_file)
-
-    # Chiudi il browser
     driver.quit()
 
-    # Correggere dimensioni e formato per Telegram
+    # Convertire e ridimensionare l'immagine
     corrected_file = "map_corrected.jpg"
     with Image.open(screenshot_file) as img:
-        img = img.convert("RGB")  # Converti in RGB per JPEG
-        max_size = (1024, 1024)
-        img.thumbnail(max_size, Image.ANTIALIAS)
+        img = img.convert("RGB")
+        img.thumbnail((1024, 1024), Image.ANTIALIAS)
         img.save(corrected_file, format="JPEG", quality=85)
 
-    # Inviare l'immagine corretta tramite Telegram
+    # Inviare l'immagine tramite Telegram
     with open(corrected_file, 'rb') as f:
         bot.send_photo(chat_id=chat_id, photo=f)
 
@@ -108,6 +140,7 @@ def generate_map(chat_id):
     os.remove(map_file)
     os.remove(screenshot_file)
     os.remove(corrected_file)
+
 
 
 
