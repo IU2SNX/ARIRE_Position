@@ -205,18 +205,12 @@ dispatcher.add_handler(CallbackQueryHandler(button))
 
 # dispatcher.add_handler(CommandHandler("add_member", add_member))
 # Define a custom filter as a function
-#def custom_filter(update, context):
+def custom_filter(update, context):
     #return context.user_data.get('add_member', False)
     #return context.chat_data.get('add_member', False) or add_member_request
- #   return context.chat_data.get('add_member', False)
+    return context.chat_data.get('add_member', False)
 # Register the handler
-#dispatcher.add_handler(MessageHandler(Filters.all, add_member, custom_filter))
-class AddMemberFilter(Filters.text):
-    def filter(self, message):
-        return dispatcher.chat_data.get(message.chat_id, {}).get('add_member', False)
-
-# Aggiungi gestore al dispatcher
-dispatcher.add_handler(MessageHandler(Filters.text & AddMemberFilter(), add_member))
+dispatcher.add_handler(MessageHandler(Filters.all, add_member, custom_filter, pass_chat_data=True)))
 
 # Route per il webhook
 @app.route('/webhook', methods=['POST'])
