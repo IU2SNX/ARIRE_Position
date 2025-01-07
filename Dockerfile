@@ -1,10 +1,14 @@
 # Usa un'immagine Python con supporto per Chrome
 FROM python:3.11-slim
 
-# Installa Chromium e il WebDriver
+# Installa le librerie di sistema necessarie
 RUN apt-get update && apt-get install -y \
     chromium-driver \
     chromium \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libfreetype6-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -14,7 +18,8 @@ WORKDIR /app
 # Copia i file del progetto
 COPY . .
 
-# Installa le dipendenze Python
+# Aggiorna pip e installa le dipendenze Python
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Comando di avvio del bot
