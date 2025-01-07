@@ -50,6 +50,10 @@ def add_member(update: Update, context: CallbackContext):
 from PIL import Image
 import imgkit
 
+from PIL import Image
+import imgkit
+import os
+
 def generate_map(chat_id):
     # Esempio di dati APRS
     aprs_data = get_aprs_data()
@@ -67,22 +71,33 @@ def generate_map(chat_id):
     png_file = "map.png"
     imgkit.from_file(map_file, png_file)
 
-    # Ridimensionare e convertire l'immagine in JPEG
-    jpeg_file = "map_resized.jpg"
+    # Correggere le dimensioni e il formato per Telegram
+    corrected_file = "map_corrected.jpg"
     with Image.open(png_file) as img:
         img = img.convert("RGB")  # Converti in RGB per JPEG
-        max_size = (1024, 1024)  # Mantieni dimensioni ragionevoli
-        img.thumbnail(max_size, Image.ANTIALIAS)  # Ridimensiona mantenendo proporzioni
-        img.save(jpeg_file, format="JPEG", quality=85)  # Salva come JPEG con qualità 85
+        width, height = img.size
 
-    # Inviare l'immagine come JPEG
-    with open(jpeg_file, 'rb') as f:
+        # Forza dimensioni minime (512x512) per conformità con Telegram
+        min_size = (512, 512)
+        if width < 512 or height < 512:
+            new_img = Image.new("RGB", min_size, (255, 255, 255))  # Sfondo bianco
+            new_img.paste(img, ((512 - width) // 2, (512 - height) // 2))
+            img = new_img
+
+        # Ridimensiona se necessario
+        max_size = (1024, 1024)
+        img.thumbnail(max_size, Image.ANTIALIAS)  # Mantieni proporzioni corrette
+        img.save(corrected_file, format="JPEG", quality=85)  # Salva come JPEG
+
+    # Inviare l'immagine corretta tramite Telegram
+    with open(corrected_file, 'rb') as f:
         bot.send_photo(chat_id=chat_id, photo=f)
 
     # Pulizia file temporanei
     os.remove(map_file)
     os.remove(png_file)
-    os.remove(jpeg_file)
+    os.remove(corrected_file)
+
 
 def get_aprs_data():
     # Simulazione chiamata API APRS
