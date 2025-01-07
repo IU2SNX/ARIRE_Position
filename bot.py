@@ -161,6 +161,8 @@ def get_aprs_data():
 
     # Effettua la richiesta all'API
     response = requests.get(url).json()
+    print(response)
+    
 
     # Verifica il risultato
     if response.get("result") != "ok":
@@ -169,6 +171,9 @@ def get_aprs_data():
 
     # Estrai i dati dei membri
     entries = response.get("entries", [])
+    if not entries:
+        print("Nessun dato trovato per i nominativi forniti.")
+        return []
     aprs_data = []
     for entry in entries:
         aprs_data.append({
