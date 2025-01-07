@@ -69,7 +69,7 @@ import time
 
 def generate_map(chat_id):
     # Esempio di dati APRS (da sostituire con la chiamata API reale)
-    aprs_data = get_aprs_data()
+    aprs_data = get_aprs_data(chat_id)
 
     if not aprs_data:
         bot.send_message(chat_id=chat_id, text="APRS vuoto")
@@ -150,10 +150,10 @@ def generate_map(chat_id):
     os.remove(screenshot_file)
     os.remove(corrected_file)
 
-def get_aprs_data():
+def get_aprs_data(chat_id):
     # Usa i nominativi aggiunti dinamicamente
     if not members_callsigns:
-        print("La lista dei nominativi è vuota.")
+        bot.send_message(chat_id=chat_id, text="members_callsigns è vuota")
         return []  # Nessun nominativo nella lista
 
     # Costruisci l'URL con i nominativi presenti nella lista
@@ -162,7 +162,7 @@ def get_aprs_data():
 
     # Effettua la richiesta all'API
     response = requests.get(url).json()
-    print(response)
+    bot.send_message(chat_id=chat_id, text=response.text)
     
 
     # Verifica il risultato
@@ -173,6 +173,7 @@ def get_aprs_data():
     # Estrai i dati dei membri
     entries = response.get("entries", [])
     if not entries:
+        bot.send_message(chat_id=chat_id, text="entries from response is empty")
         print("Nessun dato trovato per i nominativi forniti.")
         return []
     aprs_data = []
