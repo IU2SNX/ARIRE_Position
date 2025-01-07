@@ -150,7 +150,8 @@ def generate_map(chat_id, query):
 
     # Inviare l'immagine tramite Telegram
     with open(corrected_file, 'rb') as f:
-        bot.send_photo(chat_id=chat_id, photo=f)
+#        bot.send_photo(chat_id=chat_id, photo=f)
+        query.message.reply_photo(photo=f)
 
     # Pulizia file temporanei
     os.remove(map_file)
