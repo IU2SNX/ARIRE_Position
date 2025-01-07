@@ -4,6 +4,10 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, Callback
 import requests
 import folium
 
+# Caricare le variabili di ambiente
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+APRS_API_KEY = os.getenv('APRS_API_KEY')
+
 # Database temporaneo
 members = []
 
