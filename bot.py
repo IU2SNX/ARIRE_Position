@@ -196,13 +196,11 @@ dispatcher.add_handler(CommandHandler("start", start))
 dispatcher.add_handler(CallbackQueryHandler(button))
 
 # dispatcher.add_handler(CommandHandler("add_member", add_member))
-# Custom filter as a standalone function
-def add_member_filter(update):
-    # Check the condition using context.user_data
-    context = update.callback_context
-    return context.user_data.get('add_member') == True
+# Define a custom filter as a function
+def custom_filter(update, context):
+    return context.user_data.get('add_member', False)
 # Register the handler
-dispatcher.add_handler(MessageHandler(Filters.all & add_member_filter, add_member))
+dispatcher.add_handler(MessageHandler(Filters.all, add_member, custom_filter))
 
 # Route per il webhook
 @app.route('/webhook', methods=['POST'])
