@@ -65,6 +65,10 @@ def get_aprs_data():
 
 # Setup del bot
 def main():
+    if not TELEGRAM_BOT_TOKEN:
+        raise ValueError("Il token del bot non è definito. Controlla le variabili di ambiente.")
+
+    from telegram.ext import Updater
     updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
 
