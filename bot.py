@@ -77,6 +77,7 @@ def generate_map(chat_id):
         bot.send_message(chat_id=chat_id, text="APRS vuoto")
         return
 
+    bot.send_message(chat_id=chat_id, text=f"Trovati {len(aprs_data)} membri")
     # Calcola il centro della mappa
     latitudes = [entry['lat'] for entry in aprs_data]
     longitudes = [entry['lon'] for entry in aprs_data]
