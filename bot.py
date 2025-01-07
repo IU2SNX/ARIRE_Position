@@ -21,7 +21,7 @@ bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dispatcher = Dispatcher(bot, None, use_context=True)
 
 # Database temporaneo
-members = []
+members_callsigns = []
 
 # Funzioni del bot
 def start(update: Update, context: CallbackContext):
@@ -42,10 +42,19 @@ def button(update: Update, context: CallbackContext):
         generate_map(query.message.chat_id)
 
 def add_member(update: Update, context: CallbackContext):
-    if context.user_data.get('add_member'):
-        members.append(update.message.text)
-        update.message.reply_text(f"{update.message.text} aggiunto!")
-        context.user_data['add_member'] = False
+    # Controlla che l'utente abbia inviato un nominativo valido
+    callsign = update.message.text.strip().upper()  # Rimuove spazi e converte in maiuscolo
+    if not callsign:
+        update.message.reply_text("Per favore, fornisci un nominativo APRS valido.")
+        return
+
+    # Aggiungi il nominativo alla lista se non è già presente
+    if callsign not in members_callsigns:
+        members_callsigns.append(callsign)
+        update.message.reply_text(f"Nominativo {callsign} aggiunto con successo!")
+    else:
+        update.message.reply_text(f"Il nominativo {callsign} è già presente nella lista.")
+
 
 from geopy.distance import geodesic
 from math import radians, degrees
@@ -141,16 +150,36 @@ def generate_map(chat_id):
     os.remove(screenshot_file)
     os.remove(corrected_file)
 
-
-
-
 def get_aprs_data():
-    # Simulazione chiamata API APRS
-    url = f"https://api.aprs.fi/api/get?what=loc&apikey={APRS_API_KEY}&format=json"
+    # Usa i nominativi aggiunti dinamicamente
+    if not members_callsigns:
+        return []  # Nessun nominativo nella lista
+
+    # Costruisci l'URL con i nominativi presenti nella lista
+    callsigns_str = ",".join(members_callsigns[:20])  # Limite massimo di 20 nominativi
+    url = f"https://api.aprs.fi/api/get?name={callsigns_str}&what=loc&apikey={APRS_API_KEY}&format=json"
+
+    # Effettua la richiesta all'API
     response = requests.get(url).json()
-    # Estrarre i dati pertinenti
-    return [{'name': entry['name'], 'lat': float(entry['lat']), 'lon': float(entry['lng'])}
-            for entry in response.get('entries', [])]
+
+    # Verifica il risultato
+    if response.get("result") != "ok":
+        print(f"Errore nella richiesta APRS: {response.get('description')}")
+        return []
+
+    # Estrai i dati dei membri
+    entries = response.get("entries", [])
+    aprs_data = []
+    for entry in entries:
+        aprs_data.append({
+            "name": entry["name"],  # Nome del nominativo
+            "lat": float(entry["lat"]),  # Latitudine
+            "lon": float(entry["lng"]),  # Longitudine
+            "comment": entry.get("comment", ""),  # Commento (facoltativo)
+        })
+
+    return aprs_data
+
 
 # Aggiungi gestori al dispatcher
 dispatcher.add_handler(CommandHandler("start", start))
