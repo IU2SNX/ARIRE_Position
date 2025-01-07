@@ -44,7 +44,6 @@ def button(update: Update, context: CallbackContext):
 
 def add_member(update: Update, context: CallbackContext):
     context.user_data['add_member'] = False
-    bot.send_message(chat_id=chat_id, text="add_member function")
     # Controlla che l'utente abbia inviato un nominativo valido
     callsign = update.message.text.strip().upper()  # Rimuove spazi e converte in maiuscolo
     if not callsign:
