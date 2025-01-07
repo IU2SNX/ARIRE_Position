@@ -210,7 +210,7 @@ def custom_filter(update, context):
     #return context.chat_data.get('add_member', False) or add_member_request
     return context.chat_data.get('add_member', False)
 # Register the handler
-dispatcher.add_handler(MessageHandler(Filters.all, add_member, custom_filter, pass_chat_data=True)))
+dispatcher.add_handler(MessageHandler(Filters.all, add_member, custom_filter, pass_chat_data=True))
 
 # Route per il webhook
 @app.route('/webhook', methods=['POST'])
