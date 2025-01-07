@@ -47,11 +47,12 @@ def add_member(update: Update, context: CallbackContext):
         update.message.reply_text(f"{update.message.text} aggiunto!")
         context.user_data['add_member'] = False
 
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 from PIL import Image
-import imgkit
-
-from PIL import Image
-import imgkit
+import time
 import os
 
 def generate_map(chat_id):
@@ -67,27 +68,37 @@ def generate_map(chat_id):
     map_file = "map.html"
     m.save(map_file)
 
-    # Convertire l'HTML in PNG
-    png_file = "map.png"
-    imgkit.from_file(map_file, png_file)
+    # Configurare Selenium per il rendering della mappa
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_service = Service("/usr/bin/chromedriver")
 
-    # Correggere le dimensioni e il formato per Telegram
+    # Avvia il browser headless
+    driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+    driver.set_window_size(1024, 1024)  # Dimensioni della finestra
+
+    # Carica la mappa HTML
+    driver.get(f"file://{os.path.abspath(map_file)}")
+
+    # Aspetta che la mappa sia completamente caricata
+    time.sleep(5)  # Ritardo per garantire il rendering completo
+
+    # Cattura uno screenshot della mappa
+    screenshot_file = "map_screenshot.png"
+    driver.save_screenshot(screenshot_file)
+
+    # Chiudi il browser
+    driver.quit()
+
+    # Correggere dimensioni e formato per Telegram
     corrected_file = "map_corrected.jpg"
-    with Image.open(png_file) as img:
+    with Image.open(screenshot_file) as img:
         img = img.convert("RGB")  # Converti in RGB per JPEG
-        width, height = img.size
-
-        # Forza dimensioni minime (512x512) per conformità con Telegram
-        min_size = (512, 512)
-        if width < 512 or height < 512:
-            new_img = Image.new("RGB", min_size, (255, 255, 255))  # Sfondo bianco
-            new_img.paste(img, ((512 - width) // 2, (512 - height) // 2))
-            img = new_img
-
-        # Ridimensiona se necessario
         max_size = (1024, 1024)
-        img.thumbnail(max_size, Image.ANTIALIAS)  # Mantieni proporzioni corrette
-        img.save(corrected_file, format="JPEG", quality=85)  # Salva come JPEG
+        img.thumbnail(max_size, Image.ANTIALIAS)
+        img.save(corrected_file, format="JPEG", quality=85)
 
     # Inviare l'immagine corretta tramite Telegram
     with open(corrected_file, 'rb') as f:
@@ -95,8 +106,9 @@ def generate_map(chat_id):
 
     # Pulizia file temporanei
     os.remove(map_file)
-    os.remove(png_file)
+    os.remove(screenshot_file)
     os.remove(corrected_file)
+
 
 
 def get_aprs_data():
