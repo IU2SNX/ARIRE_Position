@@ -4,6 +4,27 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, Callback
 import requests
 import folium
 
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Il bot è attivo!"
+
+if __name__ == '__main__':
+    from telegram.ext import Updater
+    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
+
+    dp = updater.dispatcher
+    dp.add_handler(CommandHandler("start", lambda update, context: update.message.reply_text("Ciao!")))
+
+    updater.start_polling()
+
+    # Avvia un server Flask per Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
+
 # Caricare le variabili di ambiente
 TELEGRAM_BOT_TOKEN = os.getenv('7964420315:AAHWlP8ehga2YKQiD7zfkYL4aLQbP5M7u5Q')
 
