@@ -131,7 +131,7 @@ def generate_map(chat_id):
     driver.set_window_size(1024, 1024)
 
     driver.get(f"file://{os.path.abspath(map_file)}")
-    time.sleep(5)  # Attendere il caricamento della mappa
+    #time.sleep(5)  # Attendere il caricamento della mappa
 
     screenshot_file = "map_screenshot.png"
     driver.save_screenshot(screenshot_file)
