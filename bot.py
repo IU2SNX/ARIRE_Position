@@ -6,13 +6,6 @@ from telegram.ext import MessageHandler, Filters
 import requests
 import folium
 
-# Custom filter to check if 'add_member' condition is True
-class AddMemberFilter(Filters.BaseFilter):
-    def filter(self, message):
-        # Access context through the dispatcher
-        context = message.bot.dispatcher.context
-        return context.user_data.get('add_member') == True
-
 # Variabili di ambiente
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 APRS_API_KEY = os.getenv('APRS_API_KEY')
@@ -203,8 +196,13 @@ dispatcher.add_handler(CommandHandler("start", start))
 dispatcher.add_handler(CallbackQueryHandler(button))
 
 # dispatcher.add_handler(CommandHandler("add_member", add_member))
+# Custom filter as a standalone function
+def add_member_filter(update):
+    # Check the condition using context.user_data
+    context = update.callback_context
+    return context.user_data.get('add_member') == True
 # Register the handler
-dispatcher.add_handler(MessageHandler(AddMemberFilter(), add_member))
+dispatcher.add_handler(MessageHandler(Filters.all & add_member_filter, add_member))
 
 # Route per il webhook
 @app.route('/webhook', methods=['POST'])
