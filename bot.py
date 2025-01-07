@@ -67,19 +67,22 @@ def generate_map(chat_id):
     png_file = "map.png"
     imgkit.from_file(map_file, png_file)
 
-    # Ridimensionare l'immagine per soddisfare i requisiti di Telegram
-    resized_file = "map_resized.png"
+    # Ridimensionare e convertire l'immagine in JPEG
+    jpeg_file = "map_resized.jpg"
     with Image.open(png_file) as img:
-        img = img.convert("RGB")  # Assicurarsi che sia in formato RGB
-        max_size = (1024, 1024)  # Risoluzione massima supportata da Telegram
-        img.thumbnail(max_size, Image.ANTIALIAS)  # Ridimensiona mantenendo il rapporto
-        img.save(resized_file, format="PNG")
+        img = img.convert("RGB")  # Converti in RGB per JPEG
+        max_size = (1024, 1024)  # Mantieni dimensioni ragionevoli
+        img.thumbnail(max_size, Image.ANTIALIAS)  # Ridimensiona mantenendo proporzioni
+        img.save(jpeg_file, format="JPEG", quality=85)  # Salva come JPEG con qualità 85
 
-    # Inviare l'immagine ridimensionata tramite Telegram
-    with open(resized_file, 'rb') as f:
+    # Inviare l'immagine come JPEG
+    with open(jpeg_file, 'rb') as f:
         bot.send_photo(chat_id=chat_id, photo=f)
 
-
+    # Pulizia file temporanei
+    os.remove(map_file)
+    os.remove(png_file)
+    os.remove(jpeg_file)
 
 def get_aprs_data():
     # Simulazione chiamata API APRS
