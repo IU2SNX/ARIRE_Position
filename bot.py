@@ -37,7 +37,8 @@ def button(update: Update, context: CallbackContext):
 
     if query.data == 'add_member':
         query.message.reply_text("Invia il nominativo del membro da aggiungere:")
-        context.user_data['add_member'] = True
+#        context.user_data['add_member'] = True
+        context.chat_data['add_member'] = True
     elif query.data == 'generate_map':
         query.message.reply_text("Generazione mappa in corso...")
         generate_map(query.message.chat_id)
@@ -196,7 +197,8 @@ dispatcher.add_handler(CallbackQueryHandler(button))
 # dispatcher.add_handler(CommandHandler("add_member", add_member))
 # Define a custom filter as a function
 def custom_filter(update, context):
-    return context.user_data.get('add_member', False)
+    #return context.user_data.get('add_member', False)
+    return context.chat_data.get('add_member', False)
 # Register the handler
 dispatcher.add_handler(MessageHandler(Filters.all, add_member, custom_filter))
 
