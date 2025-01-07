@@ -5,8 +5,8 @@ import requests
 import folium
 
 # Caricare le variabili di ambiente
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-APRS_API_KEY = os.getenv('APRS_API_KEY')
+TELEGRAM_BOT_TOKEN = os.getenv('7964420315:AAHWlP8ehga2YKQiD7zfkYL4aLQbP5M7u5Q')
+APRS_API_KEY = os.getenv('200714.yrKm4qXqSdTe4PtG')
 
 # Database temporaneo
 members = []
