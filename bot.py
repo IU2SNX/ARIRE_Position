@@ -47,6 +47,8 @@ def add_member(update: Update, context: CallbackContext):
         update.message.reply_text(f"{update.message.text} aggiunto!")
         context.user_data['add_member'] = False
 
+import imgkit
+
 def generate_map(chat_id):
     # Esempio di dati APRS
     aprs_data = get_aprs_data()
@@ -56,9 +58,18 @@ def generate_map(chat_id):
     for member in aprs_data:
         folium.Marker([member['lat'], member['lon']], popup=member['name']).add_to(m)
 
-    # Salvare la mappa
-    m.save("map.html")
-    # Per inviare l'immagine statica, è necessario convertire map.html in PNG usando uno strumento esterno.
+    # Salvare la mappa come HTML
+    map_file = "map.html"
+    m.save(map_file)
+
+    # Convertire l'HTML in PNG
+    png_file = "map.png"
+    imgkit.from_file(map_file, png_file)
+
+    # Inviare il PNG tramite Telegram
+    with open(png_file, 'rb') as f:
+        bot.send_photo(chat_id=chat_id, photo=f)
+
 
 def get_aprs_data():
     # Simulazione chiamata API APRS
