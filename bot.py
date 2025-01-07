@@ -153,6 +153,7 @@ def generate_map(chat_id):
 def get_aprs_data():
     # Usa i nominativi aggiunti dinamicamente
     if not members_callsigns:
+        print("La lista dei nominativi è vuota.")
         return []  # Nessun nominativo nella lista
 
     # Costruisci l'URL con i nominativi presenti nella lista
