@@ -8,6 +8,17 @@ from flask import Flask
 
 app = Flask(__name__)
 
+# Caricare le variabili di ambiente
+TELEGRAM_BOT_TOKEN = os.getenv('7964420315:AAHWlP8ehga2YKQiD7zfkYL4aLQbP5M7u5Q')
+
+if not TELEGRAM_BOT_TOKEN:
+    print("Errore: TELEGRAM_BOT_TOKEN non è definita. Controlla le variabili di ambiente.")
+    raise ValueError("TELEGRAM_BOT_TOKEN non è stata trovata.")
+else:
+    print(f"Token trovato: {TELEGRAM_BOT_TOKEN[:5]}... (parzialmente mostrato per sicurezza)")
+
+APRS_API_KEY = os.getenv('200714.yrKm4qXqSdTe4PtG')
+
 @app.route('/')
 def home():
     return "Il bot è attivo!"
@@ -24,17 +35,6 @@ if __name__ == '__main__':
     # Avvia un server Flask per Render
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
-# Caricare le variabili di ambiente
-TELEGRAM_BOT_TOKEN = os.getenv('7964420315:AAHWlP8ehga2YKQiD7zfkYL4aLQbP5M7u5Q')
-
-if not TELEGRAM_BOT_TOKEN:
-    print("Errore: TELEGRAM_BOT_TOKEN non è definita. Controlla le variabili di ambiente.")
-    raise ValueError("TELEGRAM_BOT_TOKEN non è stata trovata.")
-else:
-    print(f"Token trovato: {TELEGRAM_BOT_TOKEN[:5]}... (parzialmente mostrato per sicurezza)")
-
-APRS_API_KEY = os.getenv('200714.yrKm4qXqSdTe4PtG')
 
 # Database temporaneo
 members = []
