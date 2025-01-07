@@ -23,6 +23,7 @@ dispatcher = Dispatcher(bot, None, use_context=True)
 
 # Database temporaneo
 members_callsigns = []
+add_member_request = False
 
 # Funzioni del bot
 def start(update: Update, context: CallbackContext):
@@ -39,12 +40,14 @@ def button(update: Update, context: CallbackContext):
         query.message.reply_text("Invia il nominativo del membro da aggiungere:")
 #        context.user_data['add_member'] = True
         context.chat_data['add_member'] = True
+        add_member_request = True
     elif query.data == 'generate_map':
         query.message.reply_text("Generazione mappa in corso...")
         generate_map(query.message.chat_id, query)
 
 def add_member(update: Update, context: CallbackContext):
     context.chat_data['add_member'] = False
+    add_member_request = False
 #    context.user_data['add_member'] = False
     # Controlla che l'utente abbia inviato un nominativo valido
     callsign = update.message.text.strip().upper()  # Rimuove spazi e converte in maiuscolo
@@ -204,7 +207,7 @@ dispatcher.add_handler(CallbackQueryHandler(button))
 # Define a custom filter as a function
 def custom_filter(update, context):
     #return context.user_data.get('add_member', False)
-    return context.chat_data.get('add_member', False)
+    return context.chat_data.get('add_member', False) or add_member_request
 # Register the handler
 dispatcher.add_handler(MessageHandler(Filters.all, add_member, custom_filter))
 
