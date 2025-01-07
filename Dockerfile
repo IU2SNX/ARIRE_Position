@@ -3,6 +3,7 @@ FROM python:3.11-slim
 
 # Installa le librerie di sistema necessarie
 RUN apt-get update && apt-get install -y \
+    gcc \
     chromium-driver \
     chromium \
     libjpeg-dev \
