@@ -41,7 +41,7 @@ def button(update: Update, context: CallbackContext):
         context.chat_data['add_member'] = True
     elif query.data == 'generate_map':
         query.message.reply_text("Generazione mappa in corso...")
-        generate_map(query.message.chat_id)
+        generate_map(query.message.chat_id, query.message.message_thread_id)
 
 def add_member(update: Update, context: CallbackContext):
     context.user_data['add_member'] = False
@@ -70,15 +70,15 @@ from selenium.webdriver.chrome.options import Options
 from PIL import Image
 import time
 
-def generate_map(chat_id):
+def generate_map(chat_id, thread_id):
     # Esempio di dati APRS (da sostituire con la chiamata API reale)
-    aprs_data = get_aprs_data(chat_id)
+    aprs_data = get_aprs_data(chat_id, thread_id)
 
     if not aprs_data:
-        bot.send_message(chat_id=chat_id, text="APRS vuoto")
+        bot.send_message(chat_id=chat_id, text="APRS vuoto", message_thread_id=thread_id)
         return
 
-    bot.send_message(chat_id=chat_id, text=f"Trovati {len(aprs_data)} membri: {', '.join(entry['name'] for entry in aprs_data)}")
+    bot.send_message(chat_id=chat_id, text=f"Trovati {len(aprs_data)} membri: {', '.join(entry['name'] for entry in aprs_data)}", message_thread_id=thread_id)
     # Calcola il centro della mappa
     latitudes = [entry['lat'] for entry in aprs_data]
     longitudes = [entry['lon'] for entry in aprs_data]
@@ -147,17 +147,17 @@ def generate_map(chat_id):
 
     # Inviare l'immagine tramite Telegram
     with open(corrected_file, 'rb') as f:
-        bot.send_photo(chat_id=chat_id, photo=f)
+        bot.send_photo(chat_id=chat_id, photo=f, message_thread_id=thread_id)
 
     # Pulizia file temporanei
     os.remove(map_file)
     os.remove(screenshot_file)
     os.remove(corrected_file)
 
-def get_aprs_data(chat_id):
+def get_aprs_data(chat_id, thread_id):
     # Usa i nominativi aggiunti dinamicamente
     if not members_callsigns:
-        bot.send_message(chat_id=chat_id, text="members_callsigns è vuota")
+        bot.send_message(chat_id=chat_id, text="members_callsigns è vuota", message_thread_id=thread_id)
         return []  # Nessun nominativo nella lista
 
     # Costruisci l'URL con i nominativi presenti nella lista
@@ -175,7 +175,7 @@ def get_aprs_data(chat_id):
     # Estrai i dati dei membri
     entries = response.get("entries", [])
     if not entries:
-        bot.send_message(chat_id=chat_id, text="entries from response is empty")
+        bot.send_message(chat_id=chat_id, text="entries from response is empty", message_thread_id=thread_id)
         print("Nessun dato trovato per i nominativi forniti.")
         return []
     aprs_data = []
