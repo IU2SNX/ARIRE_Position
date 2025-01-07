@@ -2,8 +2,16 @@ import os
 from flask import Flask, request
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Dispatcher, CommandHandler, CallbackQueryHandler, CallbackContext
+from telegram.ext import MessageHandler, Filters
 import requests
 import folium
+
+# Custom filter to check if 'add_member' condition is True
+class AddMemberFilter(Filters.BaseFilter):
+    def filter(self, message):
+        # Access context through the dispatcher
+        context = message.bot.dispatcher.context
+        return context.user_data.get('add_member') == True
 
 # Variabili di ambiente
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -42,6 +50,8 @@ def button(update: Update, context: CallbackContext):
         generate_map(query.message.chat_id)
 
 def add_member(update: Update, context: CallbackContext):
+    context.user_data['add_member'] = False
+    bot.send_message(chat_id=chat_id, text="add_member function")
     # Controlla che l'utente abbia inviato un nominativo valido
     callsign = update.message.text.strip().upper()  # Rimuove spazi e converte in maiuscolo
     if not callsign:
@@ -191,7 +201,10 @@ def get_aprs_data(chat_id):
 # Aggiungi gestori al dispatcher
 dispatcher.add_handler(CommandHandler("start", start))
 dispatcher.add_handler(CallbackQueryHandler(button))
-dispatcher.add_handler(CommandHandler("add_member", add_member))
+
+# dispatcher.add_handler(CommandHandler("add_member", add_member))
+# Register the handler
+dispatcher.add_handler(MessageHandler(AddMemberFilter(), add_member))
 
 # Route per il webhook
 @app.route('/webhook', methods=['POST'])
