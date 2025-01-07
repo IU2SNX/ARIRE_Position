@@ -3,3 +3,5 @@ requests==2.26.0
 folium==0.12.1
 Flask==2.2.5
 imgkit==1.2.2
+Pillow==9.0.1
+
