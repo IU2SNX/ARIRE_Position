@@ -163,9 +163,7 @@ def get_aprs_data(chat_id):
     url = f"https://api.aprs.fi/api/get?name={callsigns_str}&what=loc&apikey={APRS_API_KEY}&format=json"
 
     # Effettua la richiesta all'API
-    response = requests.get(url).json()
-    bot.send_message(chat_id=chat_id, text=response.text)
-    
+    response = requests.get(url).json()  
 
     # Verifica il risultato
     if response.get("result") != "ok":
