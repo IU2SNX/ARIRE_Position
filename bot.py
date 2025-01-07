@@ -6,6 +6,13 @@ import folium
 
 # Caricare le variabili di ambiente
 TELEGRAM_BOT_TOKEN = os.getenv('7964420315:AAHWlP8ehga2YKQiD7zfkYL4aLQbP5M7u5Q')
+
+if not TELEGRAM_BOT_TOKEN:
+    print("Errore: TELEGRAM_BOT_TOKEN non è definita. Controlla le variabili di ambiente.")
+    raise ValueError("TELEGRAM_BOT_TOKEN non è stata trovata.")
+else:
+    print(f"Token trovato: {TELEGRAM_BOT_TOKEN[:5]}... (parzialmente mostrato per sicurezza)")
+
 APRS_API_KEY = os.getenv('200714.yrKm4qXqSdTe4PtG')
 
 # Database temporaneo
