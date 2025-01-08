@@ -210,7 +210,8 @@ class AddMemberFilter(MessageFilter):
     def filter(self, message):
         # Verifica che chat_data['add_member'] sia impostato
         context = CallbackContext(dispatcher)
-        return context.chat_data.get('add_member', False)
+        return True
+        #return context.chat_data.get('add_member', False)
 
 add_member_filter = AddMemberFilter()
 dispatcher.add_handler(MessageHandler(Filters.text & add_member_filter, add_member))
