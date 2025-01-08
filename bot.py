@@ -203,14 +203,28 @@ def get_aprs_data(chat_id, query):
 dispatcher.add_handler(CommandHandler("start", start))
 dispatcher.add_handler(CallbackQueryHandler(button))
 
+
+#-------
+from telegram.ext.filters import MessageFilter
+class AddMemberFilter(MessageFilter):
+    def filter(self, message):
+        # Verifica che chat_data['add_member'] sia impostato
+        context = CallbackContext(dispatcher)
+        return context.chat_data.get('add_member', False)
+
+add_member_filter = AddMemberFilter()
+dispatcher.add_handler(MessageHandler(Filters.text & add_member_filter, add_member))
+#-------
+
+
 # dispatcher.add_handler(CommandHandler("add_member", add_member))
 # Define a custom filter as a function
-def custom_filter(update, context):
+#def custom_filter(update, context):
     #return context.user_data.get('add_member', False)
     #return context.chat_data.get('add_member', False) or add_member_request
-    return context.chat_data.get('add_member', False)
+    #return context.chat_data.get('add_member', False)
 # Register the handler
-dispatcher.add_handler(MessageHandler(Filters.all, add_member, custom_filter, pass_chat_data=True))
+#dispatcher.add_handler(MessageHandler(.all, add_member, custom_filter, pass_chat_data=True))
 
 # Route per il webhook
 @app.route('/webhook', methods=['POST'])
